@@ -277,15 +277,23 @@ function initPubSub () {
         }
         for (var i = 0; i < listeners.length; ++i) {
           var listener = listeners[i];
-          var text = action.created_by + ' used command `/' + action.moderation_action + (action.args ? ' ' + action.args.join(' ') : '') + '`';
+          var fields = [];
+          fields.push({'name': 'User', 'value': action.created_by});
+          fields.push({'name': 'Command', 'value': '`/' + action.moderation_action + (action.args ? ' ' + action.args.join(' ') : '') + '`'});
           var listenersForThisDiscordChannel = discordChannelId2Listeners[listener.discord.channel_id];
-          if (listenersForThisDiscordChannel.length > 1) text += ' in channel ' + listener.twitch.channel_name;
+          if (listenersForThisDiscordChannel.length > 1) fields.push({'name': 'Channel', 'value': listener.twitch.channel_name});
           if (action.moderation_action === 'timeout' || action.moderation_action === 'ban' || action.moderation_action === 'unban' || action.moderation_action === 'untimeout') {
-            text += '\nSee https://cbenni.com/' + listener.twitch.channel_name + '/?user=' + action.args[0];
+            fields.push({'name': 'Log Page', 'value': 'See https://cbenni.com/' + listener.twitch.channel_name + '/?user=' + action.args[0]});
           }
           var discordchannel = client.channels.find('id', listener.discord.channel_id);
           if (discordchannel) {
-            discordchannel.sendMessage(text);
+            discordchannel.send({
+              embed: {
+                color: 10181046,
+                timestamp: new Date(),
+                fields: fields
+              }
+            });
           } else {
             console.error('Could not find discord channel for listener ' + JSON.stringify(listener));
           }
