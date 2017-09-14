@@ -283,19 +283,22 @@ function initPubSub () {
           var listenersForThisDiscordChannel = discordChannelId2Listeners[listener.discord.channel_id];
           if (listenersForThisDiscordChannel.length > 1) fields.push({'name': 'Channel', 'value': listener.twitch.channel_name});
           if (action.moderation_action === 'timeout' || action.moderation_action === 'ban' || action.moderation_action === 'unban' || action.moderation_action === 'untimeout') {
-            fields.push({'name': 'Log Page', 'value': 'See https://cbenni.com/' + listener.twitch.channel_name + '/?user=' + action.args[0]});
-          }
-          var discordchannel = client.channels.find('id', listener.discord.channel_id);
-          if (discordchannel) {
-            discordchannel.send({
-              embed: {
-                color: 10181046,
-                timestamp: new Date(),
-                fields: fields
+            if (action.args) {
+              fields.push({'name': 'Log Page', 'value': 'See https://cbenni.com/' + listener.twitch.channel_name + '/?user=' + action.args[0]});
+
+              var discordchannel = client.channels.find('id', listener.discord.channel_id);
+              if (discordchannel) {
+                discordchannel.send({
+                  embed: {
+                    color: 10181046,
+                    timestamp: new Date(),
+                    fields: fields
+                  }
+                });
+              } else {
+                console.error('Could not find discord channel for listener ' + JSON.stringify(listener));
               }
-            });
-          } else {
-            console.error('Could not find discord channel for listener ' + JSON.stringify(listener));
+            }
           }
         }
       }
